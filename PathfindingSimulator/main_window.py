@@ -1,11 +1,16 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QComboBox, QCheckBox, QRadioButton
+from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QComboBox, QCheckBox, QRadioButton, QPushButton
 from PySide6.QtCore import QPoint, QPointF
 from enum import Enum
 
 from colour import Colour
 from node import Node, User
+from pathfinding import FindPath
 
 class MainWindow(QMainWindow):
+
+    nodes = []
+    gridSize = 20
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Learning PySide6!")
@@ -50,13 +55,21 @@ class MainWindow(QMainWindow):
             self.algorithmOptions.addItem(algorithm.name)
 
         # Show progress checkbox
-        # TODO: Implement actual functianility with showProgress boolean
-        self.showProgress = False
+        self.showProgress = True
         self.showProgressBox = QCheckBox("Show Progress")
+        self.showProgressBox.setChecked(True)
+        self.showProgressBox.clicked.connect(lambda: self.SetShowProgress())
 
         self.AddNodePalette()
 
+        self.startAlgorithm = QPushButton("Start Algorithm!")
+        self.startAlgorithm.clicked.connect(lambda: FindPath(self))
+
         self.AddWidgetsToOptionsLayout()
+
+    def SetShowProgress(self):
+        self.showProgress = self.showProgressBox.isChecked()
+
 
     # Create and add functionality to node palette radio buttons
     def AddNodePalette(self):
@@ -94,22 +107,20 @@ class MainWindow(QMainWindow):
         self.options.addWidget(self.showProgressBox)
         self.options.addWidget(self.nodePalette)
         self.options.addWidget(self.paletteWidget)
+        self.options.addWidget(self.startAlgorithm)
 
     # Creates specified nodes and adds them to a QGridLayout for organisation
     def SetupNodeGrid(self):
-        self.nodes = []
-
         # Node Grid:
-        gridSize = 20
-        for i in range(gridSize):
-            for j in range(gridSize):
-                self.nodes.append(Node(j, i, True, False, False, False, self.user))
+        for i in range(MainWindow.gridSize):
+            for j in range(MainWindow.gridSize):
+                MainWindow.nodes.append(Node(j, i, True, False, False, False, self.user))
 
         self.gridWidget = QWidget()
 
         self.nodeGrid = QGridLayout(self.gridWidget)
 
-        for node in self.nodes:
+        for node in MainWindow.nodes:
             self.nodeGrid.addWidget(node, node.y, node.x)
 
         self.nodeGrid.setSpacing(1)

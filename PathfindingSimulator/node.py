@@ -22,7 +22,7 @@ class Node(QWidget):
     endNodeCount = 0
     nodeSize = QSize(0, 0)                                                          # Initialising nodeSize var to be changed later
 
-    defaultColour = 'darkGreen'
+    defaultColour = 'orange'
     startColour = 'cyan'
     endColour = 'magenta'
     obstacleColour = 'black'
@@ -34,16 +34,24 @@ class Node(QWidget):
         self.SetColour(Node.defaultColour)
 
         self.relativePos = QPoint(0, 0)
-        self.x = x
-        self.y = y
         self.walkable = walkable
         self.occupied = occupied
-        self.start = start
-        self.end = end
+        self.isStart = start
+        self.isEnd = end
 
         self.user = user
 
         self.setMouseTracking(True)
+
+        self.x = x
+        self.y = y
+        self.gCost = 0                                                              # Distance from start node to current node
+        self.hCost = 0                                                              # Distance from current node to end node
+        self.fCost = 0                                      # Sum of G and H costs
+        self.parentNode = None
+
+    def __eq__(self, other):
+         return (self.x == other.x) and (self.y == other.y)                         # Nodes are equal if they have the same x and y position
 
     def SetColour(self, colour):
         palette = self.palette()
@@ -53,17 +61,17 @@ class Node(QWidget):
     def RemoveNode(self):
         self.walkable = True
         self.occupied = False
-        if self.start:
-            self.start = False
+        if self.isStart:
+            self.isStart = False
             Node.startNodeCount -= 1
-        elif self.end:
-            self.end = False
+        elif self.isEnd:
+            self.isEnd = False
             Node.endNodeCount -= 1
         self.SetColour(Node.defaultColour)
         
     def SetStart(self):
         if Node.startNodeCount == 0:
-            self.start = True
+            self.isStart = True
             self.walkable = True
             self.occupied = True
             self.SetColour(QColor(Node.startColour))
@@ -71,7 +79,7 @@ class Node(QWidget):
     
     def SetEnd(self):
         if Node.endNodeCount == 0:
-            self.end = True
+            self.isEnd = True
             self.walkable = True
             self.occupied = True
             self.SetColour(QColor(Node.endColour))

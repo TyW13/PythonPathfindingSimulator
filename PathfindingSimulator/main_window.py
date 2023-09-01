@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QLabel, QComboBox, QCheckBox, QRadioButton, QPushButton
-from PySide6.QtCore import QPoint, QPointF
+from PySide6.QtCore import Qt, QPoint
 from enum import Enum
 
 from colour import Colour
@@ -13,14 +13,11 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Learning PySide6!")
+        self.setWindowTitle("Pathfinding Simulator")
         self.setFixedSize(640, 480)
 
         self.user = User()
-        self.user.show()
-        self.mousePos = QPoint(0, 0)
-
-        self.canMoveMouse = True
+        #self.user.show()
         
         self.SetupOptionWidgets()
 
@@ -28,8 +25,8 @@ class MainWindow(QMainWindow):
 
         # Adding newly setup option (left) and node grid (right) layouts (inside their respective widgets) to the windows "base" layout
         baseLayout = QHBoxLayout(self)
-        baseLayout.addWidget(self.optionsWidget, 20)
-        baseLayout.addWidget(self.gridWidget, 80)
+        baseLayout.addWidget(self.optionsWidget, 1)
+        baseLayout.addWidget(self.gridWidget, 9)
         
         mainWidget = QWidget()
         mainWidget.setLayout(baseLayout)
@@ -62,9 +59,20 @@ class MainWindow(QMainWindow):
 
         self.AddNodePalette()
 
-        self.startAlgorithm = QPushButton("Start Algorithm!")
+        self.startAlgorithm = QPushButton("Start")
         self.startAlgorithm.clicked.connect(lambda: FindPath(self))
+        self.clearGrid = QPushButton("Clear")
+        self.clearGrid.clicked.connect(lambda: self.ClearNodeGrid())
+        
+        self.buttonsWidget = QWidget()
+        self.buttonsLayout = QHBoxLayout(self.buttonsWidget)
 
+        self.buttonsLayout.addWidget(self.startAlgorithm)
+        self.buttonsLayout.addWidget(self.clearGrid)
+        self.buttonsLayout.setSpacing(0.5)
+
+        self.buttonsWidget.setLayout(self.buttonsLayout)
+        
         self.AddWidgetsToOptionsLayout()
 
     def SetShowProgress(self):
@@ -101,13 +109,13 @@ class MainWindow(QMainWindow):
         self.paletteWidget = QWidget()
         self.paletteWidget.setLayout(self.paletteGrid)
 
-        self.options.addWidget(self.optionsTitle)
-        self.options.addWidget(self.algorithmSubtitle)
-        self.options.addWidget(self.algorithmOptions)
-        self.options.addWidget(self.showProgressBox)
-        self.options.addWidget(self.nodePalette)
-        self.options.addWidget(self.paletteWidget)
-        self.options.addWidget(self.startAlgorithm)
+        self.options.addWidget(self.optionsTitle, 1.5, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.algorithmSubtitle, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.algorithmOptions, 1.5, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.showProgressBox, 2, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.nodePalette, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.paletteWidget, 1.5, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.buttonsWidget, alignment=Qt.AlignmentFlag.AlignTop)
 
     # Creates specified nodes and adds them to a QGridLayout for organisation
     def SetupNodeGrid(self):
@@ -124,3 +132,11 @@ class MainWindow(QMainWindow):
             self.nodeGrid.addWidget(node, node.y, node.x)
 
         self.nodeGrid.setSpacing(1)
+
+    def ClearNodeGrid(self):
+        if self.nodeGrid.count() > 0:
+            for i in range(self.nodeGrid.count()):
+                currentNode = self.nodeGrid.itemAt(i).widget()
+                currentNode.SetDefault()
+            Node.ResetNodeValues()
+            

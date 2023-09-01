@@ -69,6 +69,19 @@ class Node(QWidget):
             Node.endNodeCount -= 1
         self.SetColour(Node.defaultColour)
         
+    def SetDefault(self):
+         self.isStart = False
+         self.isEnd = False
+         self.walkable = True
+         self.occupied = False
+
+         self.gCost = 0
+         self.hCost = 0
+         self.fCost = 0
+         self.parentNode = None
+
+         self.SetColour(Node.defaultColour)
+    
     def SetStart(self):
         if Node.startNodeCount == 0:
             self.isStart = True
@@ -91,7 +104,7 @@ class Node(QWidget):
         self.SetColour(QColor(Node.obstacleColour))
 
     # Changes clicked node to appropriate node based on which option the user selected
-    def drawCurrentNode(self):
+    def DrawCurrentNode(self):
         if(self.user.nodeToPlace == self.user.NodeToPlace.Start):
                 self.SetStart()
         elif(self.user.nodeToPlace == self.user.NodeToPlace.End):
@@ -99,9 +112,13 @@ class Node(QWidget):
         elif(self.user.nodeToPlace == self.user.NodeToPlace.Obstacle):
                 self.SetObstacle()
 
+    def ResetNodeValues():
+         Node.startNodeCount = 0
+         Node.endNodeCount = 0
+
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton and self.occupied == False:
-            self.drawCurrentNode()
+            self.DrawCurrentNode()
 
         elif event.button() == Qt.MouseButton.RightButton and self.occupied == True:
             self.RemoveNode()

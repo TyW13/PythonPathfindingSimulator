@@ -1,5 +1,4 @@
 
-
 def FindPath(mainWindow):
     openSetColour = 'green'
     closedSetColour = 'red'
@@ -12,7 +11,7 @@ def FindPath(mainWindow):
             startNode = node
         if(node.isEnd):
             endNode = node
-
+                                                                    # TODO: AFTER PATH HAS BEEN FOUND, LOOP THROUGH OPEN, CLOSED AND PATH LISTS AND SET NODE COLOURS ACCORDINGLY
     if (endNode.walkable):
         openSet = []
         closedSet = []
@@ -22,11 +21,15 @@ def FindPath(mainWindow):
             currentNode = FindLowestFCostNode(openSet)
             openSet.remove(currentNode)
 
-            if mainWindow.showProgress:
-                currentNode.SetColour(closedSetColour)
             closedSet.append(currentNode)
 
             if currentNode == endNode:
+                if mainWindow.showProgress:
+                    for openSetNode in openSet:
+                        openSetNode.SetColour(openSetColour)
+                    for closedSetNode in closedSet:
+                        closedSetNode.SetColour(closedSetColour)
+
                 RetracePath(startNode, endNode)
                 break
 
@@ -43,8 +46,6 @@ def FindPath(mainWindow):
                     neighbourNode.parentNode = currentNode
 
                     if neighbourNode not in openSet:
-                        if mainWindow.showProgress:
-                            neighbourNode.SetColour(openSetColour)
                         openSet.append(neighbourNode)
                     else:
                         for node in openSet:

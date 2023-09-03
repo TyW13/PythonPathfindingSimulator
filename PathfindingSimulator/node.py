@@ -22,7 +22,7 @@ class Node(QWidget):
     endNodeCount = 0
     nodeSize = QSize(0, 0)                                                          # Initialising nodeSize var to be changed later
 
-    defaultColour = 'orange'
+    defaultColour = 'white'
     startColour = 'cyan'
     endColour = 'magenta'
     obstacleColour = 'black'
@@ -112,7 +112,7 @@ class Node(QWidget):
         elif(self.user.nodeToPlace == self.user.NodeToPlace.Obstacle):
                 self.SetObstacle()
 
-    def ResetNodeValues():
+    def ResetNodeCountValues():
          Node.startNodeCount = 0
          Node.endNodeCount = 0
 

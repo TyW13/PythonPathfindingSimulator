@@ -4,7 +4,7 @@ from enum import Enum
 
 from colour import Colour
 from node import Node, User
-from pathfinding import FindPath
+from pathfinding import Pathfinder
 
 class MainWindow(QMainWindow):
 
@@ -17,7 +17,6 @@ class MainWindow(QMainWindow):
         self.setFixedSize(640, 480)
 
         self.user = User()
-        #self.user.show()
         
         self.SetupOptionWidgets()
 
@@ -41,8 +40,15 @@ class MainWindow(QMainWindow):
         self.optionsWidget = QWidget()
         self.options = QVBoxLayout(self.optionsWidget)
 
+        titleFont = self.font()
+        titleFont.setPointSize(20)
+        self.subtitleFont = self.font()
+        self.subtitleFont.setPointSize(12)
+
         self.optionsTitle = QLabel("Pathfinding: ")
+        self.optionsTitle.setFont(titleFont)
         self.algorithmSubtitle = QLabel("Algorithm: ")
+        self.algorithmSubtitle.setFont(self.subtitleFont)
 
         class Algorithms(Enum):
             AStar = 1
@@ -60,15 +66,18 @@ class MainWindow(QMainWindow):
         self.AddNodePalette()
 
         self.startAlgorithm = QPushButton("Start")
-        self.startAlgorithm.clicked.connect(lambda: FindPath(self))
+        self.startAlgorithm.clicked.connect(lambda: Pathfinder.FindPath(self))
         self.clearGrid = QPushButton("Clear")
         self.clearGrid.clicked.connect(lambda: self.ClearNodeGrid())
+        self.resetPath = QPushButton("Reset")
+        self.resetPath.clicked.connect(lambda: Pathfinder.ClearPath())
         
         self.buttonsWidget = QWidget()
-        self.buttonsLayout = QHBoxLayout(self.buttonsWidget)
+        self.buttonsLayout = QGridLayout(self.buttonsWidget)
 
-        self.buttonsLayout.addWidget(self.startAlgorithm)
-        self.buttonsLayout.addWidget(self.clearGrid)
+        self.buttonsLayout.addWidget(self.startAlgorithm, 0, 0)
+        self.buttonsLayout.addWidget(self.clearGrid, 1, 0)
+        self.buttonsLayout.addWidget(self.resetPath, 0, 1)
         self.buttonsLayout.setSpacing(0.5)
 
         self.buttonsWidget.setLayout(self.buttonsLayout)
@@ -82,6 +91,7 @@ class MainWindow(QMainWindow):
     # Create and add functionality to node palette radio buttons
     def AddNodePalette(self):
         self.nodePalette = QLabel("Palette: ")
+        self.nodePalette.setFont(self.subtitleFont)
 
         self.startColour = Colour(Node.startColour)
         self.startCheck = QRadioButton("Start ")
@@ -109,13 +119,13 @@ class MainWindow(QMainWindow):
         self.paletteWidget = QWidget()
         self.paletteWidget.setLayout(self.paletteGrid)
 
-        self.options.addWidget(self.optionsTitle, 1.5, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.optionsTitle, 2, alignment=Qt.AlignmentFlag.AlignTop)
         self.options.addWidget(self.algorithmSubtitle, alignment=Qt.AlignmentFlag.AlignTop)
-        self.options.addWidget(self.algorithmOptions, 1.5, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.algorithmOptions, alignment=Qt.AlignmentFlag.AlignTop)
         self.options.addWidget(self.showProgressBox, 2, alignment=Qt.AlignmentFlag.AlignTop)
         self.options.addWidget(self.nodePalette, alignment=Qt.AlignmentFlag.AlignTop)
-        self.options.addWidget(self.paletteWidget, 1.5, alignment=Qt.AlignmentFlag.AlignTop)
-        self.options.addWidget(self.buttonsWidget, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.paletteWidget, alignment=Qt.AlignmentFlag.AlignTop)
+        self.options.addWidget(self.buttonsWidget, 5, alignment=Qt.AlignmentFlag.AlignTop)
 
     # Creates specified nodes and adds them to a QGridLayout for organisation
     def SetupNodeGrid(self):
@@ -124,7 +134,7 @@ class MainWindow(QMainWindow):
             for j in range(MainWindow.gridSize):
                 MainWindow.nodes.append(Node(j, i, True, False, False, False, self.user))
 
-        self.gridWidget = QWidget()
+        self.gridWidget = Colour('black')
 
         self.nodeGrid = QGridLayout(self.gridWidget)
 
@@ -138,5 +148,5 @@ class MainWindow(QMainWindow):
             for i in range(self.nodeGrid.count()):
                 currentNode = self.nodeGrid.itemAt(i).widget()
                 currentNode.SetDefault()
-            Node.ResetNodeValues()
+            Node.ResetNodeCountValues()
             

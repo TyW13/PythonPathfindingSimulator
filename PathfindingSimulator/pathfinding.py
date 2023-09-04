@@ -1,5 +1,6 @@
 from node import Node
 
+# Handles pathfinding algorithms (only A* currently)
 class Pathfinder():
 
     openSet = []
@@ -9,8 +10,11 @@ class Pathfinder():
     def __init__(self):
         pass
 
+    # Goes through A* pathfinding algorithm to find the shortest path from one point to another, avoiding any obstacles and staying inside the grid
+    def FindPath(mainWindow):     
 
-    def FindPath(mainWindow):
+        Pathfinder.ClearPath()
+   
         Pathfinder.openSet.clear()
         Pathfinder.closedSet.clear()
         Pathfinder.path.clear()
@@ -26,7 +30,7 @@ class Pathfinder():
                 startNode = node
             if(node.isEnd):
                 endNode = node
-                                                                        # TODO: AFTER PATH HAS BEEN FOUND, LOOP THROUGH OPEN, CLOSED AND PATH LISTS AND SET NODE COLOURS ACCORDINGLY
+
         if (endNode.walkable):
             Pathfinder.openSet.append(startNode)
             
@@ -71,6 +75,7 @@ class Pathfinder():
         print(len(Pathfinder.path))
 
     # Loops through all nodes in open set and returns node with the lowest F cost to be next currentNode
+    # If two nodes have the same F score, compare h cost to find one closest to end node (heuristic)
     def FindLowestFCostNode():
         lowestFCost = Pathfinder.openSet[0]
 
@@ -83,6 +88,7 @@ class Pathfinder():
 
         return lowestFCost
 
+    # Given the current node, find all valid nodes (not obstacles and still within grid) and returns a list containing them so that the algorithm may know which nodes to check next
     def FindNeighbours(mainWindow, currentNode):
         neighbours = []
 
@@ -107,12 +113,14 @@ class Pathfinder():
 
         return neighbours
 
+    # Attempts to find the given node within the given set returning True if it is found and False if it is not found
     def CheckIfNodeInSet(node, set):
         for n in set:
             if n == node:
                 return True
         return False
 
+    # Calculates the distance between two nodes to find g and h costs for nodes in the grid as theyre checked
     def GetDistanceBetweenNodes(nodeA, nodeB):
         distanceX = abs(nodeA.x - nodeB.x)
         distanceY = abs(nodeA.y - nodeB.y)
@@ -122,19 +130,20 @@ class Pathfinder():
         
         return 14 * distanceX + 10 * (distanceY - distanceX)
 
+    # Once the algorithm reaches the desired end point (if it does), this is called to trace back through each nodes parent node (starting from the end node) 
+    # to find the optimal path taken during the algorithms previous processing
     def RetracePath(startNode, endNode):
         pathColour = 'pink'
 
         currentNode = endNode
         while currentNode != startNode:
-            Pathfinder.path.append(currentNode)
+            currentNode.SetColour(pathColour)
             currentNode = currentNode.parentNode
 
-        Pathfinder.path.append(startNode)
+        startNode.SetColour(pathColour)
 
-        for node in Pathfinder.path:
-            node.SetColour(pathColour)
-
+    # Loops through open/closed and path sets, setting any node that is not the start node, within these sets, to its default values/colour 
+    # so that the user may alter the environment for a new path
     def ClearPath():
         if len(Pathfinder.closedSet) > 0 and len(Pathfinder.openSet) > 0:
             for node in (Pathfinder.closedSet + Pathfinder.openSet):
@@ -142,6 +151,8 @@ class Pathfinder():
                     node.SetColour(Node.startColour)
                 elif node.isEnd:
                     node.SetColour(Node.endColour)
+                elif node.isObstacle:
+                    pass
                 else:
                     node.SetDefault()
 

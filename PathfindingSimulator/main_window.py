@@ -10,10 +10,11 @@ class MainWindow(QMainWindow):
 
     nodes = []
     gridSize = 20
+    baseWindowTitle = "Pathfinding Simulator"
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Pathfinding Simulator")
+        self.setWindowTitle(MainWindow.baseWindowTitle)
         self.setFixedSize(640, 480)
 
         self.user = User()
@@ -23,7 +24,7 @@ class MainWindow(QMainWindow):
         self.SetupNodeGrid()                                                        # Creates node grid base widget and QGridLayout to store nodes in
 
         # Adding newly setup option (left) and node grid (right) layouts (inside their respective widgets) to the windows "base" layout
-        baseLayout = QHBoxLayout(self)
+        baseLayout = QHBoxLayout()
         baseLayout.addWidget(self.optionsWidget, 1)
         baseLayout.addWidget(self.gridWidget, 9)
         
@@ -32,6 +33,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(mainWidget)
 
+    # Changes value of a bool which determines what type of node the user will place (Start/End/Obstacle) given through the nodeState parameter, this will be called by each radiobutton
     def SetNodeToPlace(self, user, nodeState):
         user.nodeToPlace = user.NodeToPlace[nodeState]
 
@@ -67,10 +69,10 @@ class MainWindow(QMainWindow):
 
         self.startAlgorithm = QPushButton("Start")
         self.startAlgorithm.clicked.connect(lambda: Pathfinder.FindPath(self))
-        self.clearGrid = QPushButton("Clear")
-        self.clearGrid.clicked.connect(lambda: self.ClearNodeGrid())
-        self.resetPath = QPushButton("Reset")
+        self.resetPath = QPushButton("Clear Path")
         self.resetPath.clicked.connect(lambda: Pathfinder.ClearPath())
+        self.clearGrid = QPushButton("Clear All")
+        self.clearGrid.clicked.connect(lambda: self.ClearNodeGrid())
         
         self.buttonsWidget = QWidget()
         self.buttonsLayout = QGridLayout(self.buttonsWidget)
@@ -84,6 +86,7 @@ class MainWindow(QMainWindow):
         
         self.AddWidgetsToOptionsLayout()
 
+    # Sets showProgress bool to value of the UI checkbox
     def SetShowProgress(self):
         self.showProgress = self.showProgressBox.isChecked()
 
@@ -94,22 +97,22 @@ class MainWindow(QMainWindow):
         self.nodePalette.setFont(self.subtitleFont)
 
         self.startColour = Colour(Node.startColour)
-        self.startCheck = QRadioButton("Start ")
+        self.startCheck = QRadioButton("Start")
         self.startCheck.setChecked(True)
         self.startCheck.clicked.connect(lambda: self.SetNodeToPlace(self.user, "Start"))
 
         self.endColour = Colour(Node.endColour)
-        self.endCheck = QRadioButton("End ")
+        self.endCheck = QRadioButton("End")
         self.endCheck.clicked.connect(lambda: self.SetNodeToPlace(self.user, "End"))
 
         self.obstacleColour = Colour(Node.obstacleColour)
-        self.obstacleCheck = QRadioButton("Obstacle ")
+        self.obstacleCheck = QRadioButton("Obstacle")
         self.obstacleCheck.clicked.connect(lambda: self.SetNodeToPlace(self.user, "Obstacle"))
 
     # Adds all relevant created widgets to vertical box layout (options) on the left side of the application
     def AddWidgetsToOptionsLayout(self):
-        self.paletteGrid = QGridLayout(self)
-        self.paletteGrid.addWidget(self.startColour, 0, 0, 2, 1)                                # (widgetToAdd, rowNum, columnNum, rowsToSpan,columnsToSpan
+        self.paletteGrid = QGridLayout()
+        self.paletteGrid.addWidget(self.startColour, 0, 0, 2, 1)                                            # (widgetToAdd, rowNum, columnNum, rowsToSpan ,columnsToSpan)
         self.paletteGrid.addWidget(self.startCheck, 0, 1, 1, 3)
         self.paletteGrid.addWidget(self.endColour, 1, 0, 2, 1)
         self.paletteGrid.addWidget(self.endCheck, 1, 1, 1, 3)
@@ -128,13 +131,15 @@ class MainWindow(QMainWindow):
         self.options.addWidget(self.buttonsWidget, 5, alignment=Qt.AlignmentFlag.AlignTop)
 
     # Creates specified nodes and adds them to a QGridLayout for organisation
+    # Acts as the canvas for the user to draw their environment and simulate pathfinding
     def SetupNodeGrid(self):
         # Node Grid:
         for i in range(MainWindow.gridSize):
             for j in range(MainWindow.gridSize):
                 MainWindow.nodes.append(Node(j, i, True, False, False, False, self.user))
 
-        self.gridWidget = Colour('black')
+        self.gridBgndColour = 'black'
+        self.gridWidget = Colour(self.gridBgndColour)
 
         self.nodeGrid = QGridLayout(self.gridWidget)
 
@@ -143,6 +148,7 @@ class MainWindow(QMainWindow):
 
         self.nodeGrid.setSpacing(1)
 
+    # Comepletely clear the node grid and set all the node values back to their default state giving the user the option to start from scratch
     def ClearNodeGrid(self):
         if self.nodeGrid.count() > 0:
             for i in range(self.nodeGrid.count()):

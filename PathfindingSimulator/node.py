@@ -7,9 +7,9 @@ from enum import Enum
 class User(QWidget):
 
     class NodeToPlace(Enum):
-            Start = 1
-            End = 2
-            Obstacle = 3
+        Start = 1
+        End = 2
+        Obstacle = 3
 
     def __init__(self):
         super(User, self).__init__()
@@ -38,6 +38,7 @@ class Node(QWidget):
         self.occupied = occupied
         self.isStart = start
         self.isEnd = end
+        self.isObstacle  = False
 
         self.user = user
 
@@ -47,7 +48,7 @@ class Node(QWidget):
         self.y = y
         self.gCost = 0                                                              # Distance from start node to current node
         self.hCost = 0                                                              # Distance from current node to end node
-        self.fCost = 0                                      # Sum of G and H costs
+        self.fCost = 0                                                              # Sum of G and H costs
         self.parentNode = None
 
     def __eq__(self, other):
@@ -58,6 +59,7 @@ class Node(QWidget):
         palette.setColor(QPalette.ColorRole.Window, QColor(colour))
         self.setPalette(palette)
 
+    # Effectively removes a placed node by setting its none pathfinding values to their default values and also decrementing the appropriate node counts
     def RemoveNode(self):
         self.walkable = True
         self.occupied = False
@@ -70,17 +72,17 @@ class Node(QWidget):
         self.SetColour(Node.defaultColour)
         
     def SetDefault(self):
-         self.isStart = False
-         self.isEnd = False
-         self.walkable = True
-         self.occupied = False
+        self.isStart = False
+        self.isEnd = False
+        self.walkable = True
+        self.occupied = False
 
-         self.gCost = 0
-         self.hCost = 0
-         self.fCost = 0
-         self.parentNode = None
+        self.gCost = 0
+        self.hCost = 0
+        self.fCost = 0
+        self.parentNode = None
 
-         self.SetColour(Node.defaultColour)
+        self.SetColour(Node.defaultColour)
     
     def SetStart(self):
         if Node.startNodeCount == 0:
@@ -99,6 +101,7 @@ class Node(QWidget):
             Node.endNodeCount += 1
 
     def SetObstacle(self):
+        self.isObstacle = True
         self.walkable = False
         self.occupied = True
         self.SetColour(QColor(Node.obstacleColour))
@@ -106,15 +109,15 @@ class Node(QWidget):
     # Changes clicked node to appropriate node based on which option the user selected
     def DrawCurrentNode(self):
         if(self.user.nodeToPlace == self.user.NodeToPlace.Start):
-                self.SetStart()
+            self.SetStart()
         elif(self.user.nodeToPlace == self.user.NodeToPlace.End):
-                self.SetEnd()
+            self.SetEnd()
         elif(self.user.nodeToPlace == self.user.NodeToPlace.Obstacle):
-                self.SetObstacle()
+            self.SetObstacle()
 
     def ResetNodeCountValues():
-         Node.startNodeCount = 0
-         Node.endNodeCount = 0
+        Node.startNodeCount = 0
+        Node.endNodeCount = 0
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton and self.occupied == False:
@@ -124,10 +127,10 @@ class Node(QWidget):
             self.RemoveNode()
 
     def moveEvent(self, e):
-         self.relativePos = self.pos()
+        self.relativePos = self.pos()
     
     def resizeEvent(self, e):
-         Node.nodeSize = self.size()
+        Node.nodeSize = self.size()
 
     def sizeHint(self):
-         return QSize(100, 100)
+        return QSize(100, 100)

@@ -1,3 +1,4 @@
+from PySide6.QtCore import QTimer
 from node import Node
 
 # Handles pathfinding algorithms (only A* currently)
@@ -6,6 +7,7 @@ class Pathfinder():
     openSet = []
     closedSet = []
     path = []
+    progressTimeInterval = 1000     # 1000 = 1 second
 
     def __init__(self):
         pass
@@ -19,48 +21,48 @@ class Pathfinder():
         Pathfinder.closedSet.clear()
         Pathfinder.path.clear()
 
-        openSetColour = 'green'
-        closedSetColour = 'red'
-        startNode = None
-        endNode = None
+        Pathfinder.openSetColour = 'green'
+        Pathfinder.closedSetColour = 'red'
+        Pathfinder.startNode = None
+        Pathfinder.endNode = None
 
         # Find which nodes in node list are start and end node
         for node in mainWindow.nodes:
             if(node.isStart):
-                startNode = node
+                Pathfinder.startNode = node
             if(node.isEnd):
-                endNode = node
+                Pathfinder.endNode = node
 
-        if (endNode.walkable):
-            Pathfinder.openSet.append(startNode)
+        if (Pathfinder.endNode.walkable):
+            Pathfinder.openSet.append(Pathfinder.startNode)
             
             while len(Pathfinder.openSet) > 0:
-                currentNode = Pathfinder.FindLowestFCostNode()
-                Pathfinder.openSet.remove(currentNode)
+                Pathfinder.currentNode = Pathfinder.FindLowestFCostNode()
+                Pathfinder.openSet.remove(Pathfinder.currentNode)
 
-                Pathfinder.closedSet.append(currentNode)
+                Pathfinder.closedSet.append(Pathfinder.currentNode)
 
-                if currentNode == endNode:
+                if Pathfinder.currentNode == Pathfinder.endNode:
                     if mainWindow.showProgress:
                         for openSetNode in Pathfinder.openSet:
-                            openSetNode.SetColour(openSetColour)
+                            openSetNode.SetColour(Pathfinder.openSetColour)
                         for closedSetNode in Pathfinder.closedSet:
-                            closedSetNode.SetColour(closedSetColour)
+                            closedSetNode.SetColour(Pathfinder.closedSetColour)
 
-                    Pathfinder.RetracePath(startNode, endNode)
+                    Pathfinder.RetracePath(Pathfinder.startNode, Pathfinder.endNode)
                     break
 
-                for neighbourNode in Pathfinder.FindNeighbours(mainWindow, currentNode):
+                for neighbourNode in Pathfinder.FindNeighbours(mainWindow):
                     if not neighbourNode.walkable or Pathfinder.CheckIfNodeInSet(neighbourNode, Pathfinder.closedSet):
                         continue
 
-                    newMovementCostToNeighbour = currentNode.gCost + Pathfinder.GetDistanceBetweenNodes(currentNode, neighbourNode)
+                    newMovementCostToNeighbour = Pathfinder.currentNode.gCost + Pathfinder.GetDistanceBetweenNodes(Pathfinder.currentNode, neighbourNode)
 
                     if newMovementCostToNeighbour < neighbourNode.gCost or (Pathfinder.CheckIfNodeInSet(neighbourNode, Pathfinder.openSet) == False):
                         neighbourNode.gCost = newMovementCostToNeighbour
-                        neighbourNode.hCost = Pathfinder.GetDistanceBetweenNodes(neighbourNode, endNode)
+                        neighbourNode.hCost = Pathfinder.GetDistanceBetweenNodes(neighbourNode, Pathfinder.endNode)
                         neighbourNode.fCost = neighbourNode.gCost + neighbourNode.hCost
-                        neighbourNode.parentNode = currentNode
+                        neighbourNode.parentNode = Pathfinder.currentNode
 
                         if neighbourNode not in Pathfinder.openSet:
                             Pathfinder.openSet.append(neighbourNode)
@@ -71,8 +73,6 @@ class Pathfinder():
                                     node.hCost = neighbourNode.hCost
                                     node.fCost = neighbourNode.fCost
                                     node.parentNode = neighbourNode.parentNode
-
-        print(len(Pathfinder.path))
 
     # Loops through all nodes in open set and returns node with the lowest F cost to be next currentNode
     # If two nodes have the same F score, compare h cost to find one closest to end node (heuristic)
@@ -89,7 +89,7 @@ class Pathfinder():
         return lowestFCost
 
     # Given the current node, find all valid nodes (not obstacles and still within grid) and returns a list containing them so that the algorithm may know which nodes to check next
-    def FindNeighbours(mainWindow, currentNode):
+    def FindNeighbours(mainWindow):
         neighbours = []
 
         for x in range(-1, 2):
@@ -97,8 +97,8 @@ class Pathfinder():
                 if x == 0 and y == 0:
                     continue
 
-                checkXPos = currentNode.x + x
-                checkYPos = currentNode.y + y
+                checkXPos = Pathfinder.currentNode.x + x
+                checkYPos = Pathfinder.currentNode.y + y
 
                 # Iterators through list and returns next neighbourNode that fulfils requirements (correct x and y positions)
                 for node in mainWindow.nodes:
